@@ -10,6 +10,8 @@ library(magrittr)
 library(ggplot2)
 library(knitr)
 library(kableExtra)
+library(dplyr)
+library(qwraps2)
 
 
 ```
@@ -21,16 +23,14 @@ library(kableExtra)
 file = "/Users/shantanu/Data_Files/Breweries.csv"
 Breweries = read.csv(file=file,head=TRUE,sep=",")
 
-# head(Breweries) %>%
-#   kable() %>% 
-#   kable_styling(c("striped", "bordered", full_width = FALSE))
-# 
-# head(Breweries)
-
 
 file = "/Users/shantanu/Data_Files/Beers.csv"
 Beers = read.csv(file=file,head=TRUE,sep=",")
-# head(Beers)
+
+
+file = "/Users/shantanu/Data_Files/statesize.csv"
+State.Size = read.csv(file=file,head=TRUE,sep=",")
+names(State.Size)[3] = "State"
 
 ```
 
@@ -43,8 +43,23 @@ Breweries.state <- as.data.frame(table(Breweries$State))
 
 names(Breweries.state) = c("State", "Num of Breweries")
 
-Breweries.state %>% kable() %>%
-  kable_styling(bootstrap_options = "striped", "bordered", full_width = F) 
+Breweries.state$State <- invisible(trimws(Breweries.state[,1]))
+
+Breweries.state$State <- factor(Breweries.state$State)
+
+Breweries.state <- merge(x = Breweries.state, y = State.Size, by = "State",all.x = TRUE)
+
+Breweries.state.display <- data.frame(Breweries.state$State,  Breweries.state$`Num of Breweries`, Breweries.state$Region)
+
+names(Breweries.state.display) = c("State","Num of Breweries","Region")
+
+Breweries.state.display %>% filter(Region == "West") %>% arrange(desc(`Num of Breweries`)) %>% kable() %>% kable_styling(bootstrap_options = "striped", "bordered", full_width = F)
+
+Breweries.state.display %>% filter(Region == "Northeast") %>% arrange(desc(`Num of Breweries`)) %>% kable() %>% kable_styling(bootstrap_options = "striped", "bordered", full_width = F)
+
+Breweries.state.display %>% filter(Region == "South") %>% arrange(desc(`Num of Breweries`)) %>% kable() %>% kable_styling(bootstrap_options = "striped", "bordered", full_width = F)
+
+Breweries.state.display %>% filter(Region == "Midwest") %>% arrange(desc(`Num of Breweries`)) %>% kable() %>% kable_styling(bootstrap_options = "striped", "bordered", full_width = F)
 
 ```
 
@@ -55,16 +70,16 @@ Breweries.state %>% kable() %>%
 
 colnames(Breweries)[1] <- "Brewery_id" #change column name to use as merge variable
 
-new.df <- merge(Beers, Breweries, by = "Brewery_id") #merge by brewery_id
+Beer.Breweries <- merge(Beers, Breweries, by = "Brewery_id") #merge by brewery_id
 
-names(new.df)[2] <- "Beer Name" #clean up column name for beer
-names(new.df)[8] <- "Brewery Name" #clean up column name for brewery
+names(Beer.Breweries)[2] <- "Beer Name" #clean up column name for beer
+names(Beer.Breweries)[8] <- "Brewery Name" #clean up column name for brewery
 
 
-head(new.df,6) %>% kable() %>%
+head(Beer.Breweries,6) %>% kable() %>%
   kable_styling(c("striped", "bordered"))
 
-tail(new.df,6) %>% kable() %>%
+tail(Beer.Breweries,6) %>% kable() %>%
   kable_styling(c("striped", "bordered"))
 
 ```
@@ -74,7 +89,7 @@ tail(new.df,6) %>% kable() %>%
 
 ```{r}
 
-na_count <-sapply(new.df, function(y) sum(length(which(is.na(y))))) #use sapply to count NAs of each column
+na_count <-sapply(Beer.Breweries, function(y) sum(length(which(is.na(y))))) #use sapply to count NAs of each column
 na_count <- as.data.frame(na_count) #change object to data frame
 
 #show NAs in each column
@@ -85,19 +100,18 @@ na_count %>% kable() %>%
 
 
 ##### 4. Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+
 ```{r, fig.width=16, fig.height=07}
 
-new.df.med <- aggregate(new.df[,4:5], list(new.df$State), median, na.rm = TRUE) #store medians of ABV & IBU / state in new data frame
+Beer.Breweries.med <- aggregate(Beer.Breweries[,4:5], list(Beer.Breweries$State), median, na.rm = TRUE) #store medians of ABV & IBU / state in new data frame
 
-names(new.df.med)[1] = "State"
+names(Beer.Breweries.med)[1] = "State"
 
-head(new.df.med)
-
-ggplot(new.df.med, aes(x = State , y = ABV, fill = State)) + geom_bar(stat = "identity") + theme_light() +
+ggplot(Beer.Breweries.med, aes(x = State , y = ABV, fill = State)) + geom_bar(stat = "identity") + theme_light() +
   ggtitle("State Wise Beer Max ABV") +
   theme(plot.title = element_text(hjust = 0.5,size = 25,colour = "Red"))
 
-ggplot(new.df.med, aes(x = State , y = IBU, fill = State)) + geom_bar(stat = "identity") + theme_light() +
+ggplot(Beer.Breweries.med, aes(x = State , y = IBU, fill = State)) + geom_bar(stat = "identity") + theme_light() +
   ggtitle("State Wise Beer Max IBU") +
   theme(plot.title = element_text(hjust = 0.5,size = 25,colour = "Red"))
 
@@ -107,10 +121,11 @@ ggplot(new.df.med, aes(x = State , y = IBU, fill = State)) + geom_bar(stat = "id
 ```{r}
 
 
-new.df[which.max(new.df$ABV), c(4,10)] %>% kable() %>%
+Beer.Breweries[which.max(Beer.Breweries$ABV), c(4,10)] %>% kable() %>%
   kable_styling(bootstrap_options = "striped", "bordered", full_width = F) 
 
-new.df[which.max(new.df$IBU), c(5,10)] 
+Beer.Breweries[which.max(Beer.Breweries$IBU), c(5,10)] %>% kable() %>%
+  kable_styling(bootstrap_options = "striped", "bordered", full_width = F) 
 
 
 ```
@@ -118,7 +133,8 @@ new.df[which.max(new.df$IBU), c(5,10)]
 ##### 6. Summary statistics for the ABV variable.
 ```{r}
 
-summary(new.df$ABV)
+summary(Beer.Breweries$ABV)
+
 
 ```
 
@@ -127,14 +143,10 @@ summary(new.df$ABV)
 ##### 7. 
 
 ##### Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot
-##### scatter.smooth(x = new.df$ABV, y = new.df$IBU) #basic plot showing correlation line
-##### cor(new.df$ABV, new.df$IBU, use = "complete.obs") correlation cooefficients 
-##### linearMod <- lm(IBU ~ ABV, data = new.df) #store linear model
-##### summary(linearMod) #display summary of linear model
 
 ```{r,fig.width=10, fig.height=07}
 
-ggplot(new.df, aes(x=new.df$ABV, y=new.df$IBU)) +
+ggplot(Beer.Breweries, aes(x=Beer.Breweries$ABV, y=Beer.Breweries$IBU)) +
     geom_point(shape=1) +   
     geom_smooth(method=lm) +   ggtitle("Scatterplot for Alcoholic Content vs Bitterness") +
   theme(plot.title = element_text(hjust = 0.5,size = 15,colour = "Red"))  + labs(x = "ABV - Alcohol Content")  + labs(y = "IBU - Bitterness")
