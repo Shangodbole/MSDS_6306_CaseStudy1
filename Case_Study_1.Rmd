@@ -1,5 +1,5 @@
 ---
-title: "Case Study 1"
+title: "Strategic Business Ventures & Opportunities"
 output: html_document
 ---
 
@@ -13,13 +13,6 @@ library(kableExtra)
 library(dplyr)
 library(qwraps2)
 
-
-```
-
-##### Get the Data
-
-```{r}
-
 file = "/Users/shantanu/Data_Files/Breweries.csv"
 Breweries = read.csv(file=file,head=TRUE,sep=",")
 
@@ -31,11 +24,15 @@ Beers = read.csv(file=file,head=TRUE,sep=",")
 file = "/Users/shantanu/Data_Files/statesize.csv"
 State.Size = read.csv(file=file,head=TRUE,sep=",")
 names(State.Size)[3] = "State"
-
 ```
+We are excited to bring you an exciting development and new business opportunity that we believe would help Anheuser-Busch InBev employ rapid entry to market, without disruption of current production. In 2017, Bud Light (#1) and Budweiser (#3) remained in the Top 3 of Best Selling Beer in USA, yet they (along with many others) saw a decline in market share. Millennials are drinking wine over beer. At the same time, the growing Hispanic population is driving the increase in demand for Mexican brand beers (Corona and Modelo). In addition, the growingcraft beer segment is maturing and starting to slow down. This puts Anheuser-Busch in a unique situation which they may be able to capitalize on in order to drive shareholder wealth!
+[source](https://www.usatoday.com/story/money/food/2018/07/04/top-selling-beers-in-america-budweiser-coors-heineken/36440871/)
 
 
-##### 1. How many breweries are present in each state?
+#### Brewries Across America
+
+As you can clearly see below, 10 states are home to over 50% of the breweries across the USA. In fact, Fort Collins, CO is home to a brewery from Anheuser-Busch! Yet, it is not the large brewries that set CO apart. Colorado's craft beer scene is what is driving its brewery numbers high!
+[source](http://www.cobizmag.com/Trends/Why-Colorado-reigns-as-the-Napa-Valley-of-beer/)
 
 ```{r}
 
@@ -64,9 +61,10 @@ Breweries.state.display %>% filter(Region == "Midwest") %>% arrange(desc(`Num of
 ```
 
 
-##### 2. Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.
+When we look at the numbers, we begin to see that 2410 beers are produced by these 558 brewries. While the data provided an abundance of information, it was the missing values that were striking!
 
 ```{r}
+#2. Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.
 
 colnames(Breweries)[1] <- "Brewery_id" #change column name to use as merge variable
 
@@ -84,10 +82,10 @@ tail(Beer.Breweries,6) %>% kable() %>%
 
 ```
 
-
-##### 3. Report the number of NA's in each column.
+We can see that out of those 2410 beers, over 1000 were missing an International Bitterness Unit (IBU). With how fast the craft beer industry turns over new beers, it is no surprise that we would have nearly half of the data set missing an IBU score. With respect to Alcohol By Volume (ABV), only 62 beers did not contain entries. Nonetheless, we are still able to obtain significant data from the remaining data.
 
 ```{r}
+#3. Report the number of NA's in each column.
 
 na_count <-sapply(Beer.Breweries, function(y) sum(length(which(is.na(y))))) #use sapply to count NAs of each column
 na_count <- as.data.frame(na_count) #change object to data frame
@@ -99,9 +97,11 @@ na_count %>% kable() %>%
 ```
 
 
-##### 4. Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+##### Median ABV and IBU Across America
+While the popular Bud Light an Budweiser are in the moderate ABV and IBU range, we can see that the median ABV and IBU across the country are higher than the top selling beer. We get a quick overview of where the brewries are outputting beers. Since microbrewries don't have the same distribution network as major companies, they tend to talor to local tastes, which gives us a very strong indicator of what that state's population is producing. 
 
 ```{r, fig.width=16, fig.height=07}
+# 4. Compute the median alcohol content and international
 
 Beer.Breweries.med <- aggregate(Beer.Breweries[,4:5], list(Beer.Breweries$State), median, na.rm = TRUE) #store medians of ABV & IBU / state in new data frame
 
@@ -117,9 +117,11 @@ ggplot(Beer.Breweries.med, aes(x = State , y = IBU, fill = State)) + geom_bar(st
 
 ```
 
-##### 5.Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+Looking closer into the data, we get to see CO, the state with the most brewries, is producing the higest ABV at .128. While OR is clearly experimenting with a high IBU beer with a score of 138 (nearly double tht of Bud Light)! 
+
 ```{r}
 
+#5.Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
 
 Beer.Breweries[which.max(Beer.Breweries$ABV), c(4,10)] %>% kable() %>%
   kable_styling(bootstrap_options = "striped", "bordered", full_width = F) 
@@ -129,10 +131,11 @@ Beer.Breweries[which.max(Beer.Breweries$IBU), c(5,10)] %>% kable() %>%
 
 
 ```
+#### Alcohol By Volume: A Closer Look
+We see that out of 2410 beers, the least alcoholic is 0.1% alcohol, while the most alcoholic is 12.8% alcohol. Yet, we can also identify that 50% of the ABV for the beers range between 5% and 6.7%. With the half of the beers having an ABV level within1.7% of each other, it appears the customer has decided that is the 'sweet spot' for their alcohol tolerance. 
 
-##### 6. Summary statistics for the ABV variable.
 ```{r}
-
+# 6. Summary statistics for the ABV variable.
 summary(Beer.Breweries$ABV)
 
 
@@ -140,11 +143,39 @@ summary(Beer.Breweries$ABV)
 
 
 
-##### 7. 
+##### What does it all mean?
 
-##### Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot
+Based on the data provided to us, we found insufficient evidence to support that the linear relationship between ABV and IBU is due to statistical chance at the 0.05 alpha level of confidence (p-value <0.0001). Furthermore, we also found that the 67% of the variance in the IBU data is explained by the ABV data. In other words, there appears to be a positive correlation between ABV and IBU. As ABV increases, so does IBU and vice versa.
 
 ```{r,fig.width=10, fig.height=07}
+
+```{r,fig.width=10, fig.height=07}
+#7 Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot
+
+#cor(new.df$ABV, new.df$IBU, use = "complete.obs") #correlation cooefficients\
+#OUTPUT: [1] 0.6706215
+
+#linearMod <- lm(IBU ~ ABV, data = new.df) #store linear model
+#summary(linearMod) #display summary of linear model
+#OUTPUT:
+#Call:
+#lm(formula = IBU ~ ABV, data = new.df)
+#
+#Residuals:
+#    Min      1Q  Median      3Q     Max 
+#-78.849 -11.977  -0.721  13.997  93.458 
+#
+#Coefficients:
+#            Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)  -34.099      2.326  -14.66   <2e-16 ***
+#ABV         1282.037     37.860   33.86   <2e-16 ***
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#
+#Residual standard error: 19.26 on 1403 degrees of freedom
+#  (1005 observations deleted due to missingness)
+#Multiple R-squared:  0.4497,	Adjusted R-squared:  0.4493 
+#F-statistic:  1147 on 1 and 1403 DF,  p-value: < 2.2e-16
 
 ggplot(Beer.Breweries, aes(x=Beer.Breweries$ABV, y=Beer.Breweries$IBU)) +
     geom_point(shape=1) +   
@@ -153,7 +184,7 @@ ggplot(Beer.Breweries, aes(x=Beer.Breweries$ABV, y=Beer.Breweries$IBU)) +
 
 ```
 
-
+We believe the advantage of understanding the correlation positions Anheuser-Busch InBev in a strategic position with respects to the entry to market. With the most popular brands of Anheuser-Busch InBev averaging around 4% ABV, we believe the craft beer opportunities lie within the 5% - 6.7% ABV range.
 
 
 
