@@ -1,13 +1,14 @@
-#Purpose
+# Purpose
 The purpose of this project is to analyze and present the given data sets (Breweries.csv & Beer.csv). The code book that follows will describe the data sets, their variables, the questions, answers to those questions, and code used to obtain the answers.
 
-##Datasets
-File Name | Source | Description
-----------|--------|------------
-Beers.csv | Provided by professor | Dataset contains a list of 2410 US craft beers and specific characteristics
-Breweries.csv | Provided by professor | Daaset contains a list of 558 US breweries and their locations
+## Datasets
+| File Name | Source | Description |
+| ----------|--------|------------ |
+| Beers.csv | Provided by professor | Dataset contains a list of 2410 US craft beers and specific characteristics |
+| Breweries.csv | Provided by professor | Daaset contains a list of 558 US breweries and their locations |
+| StateSize.csv | Statistical Slueth | Dataset contains sq miles, name, abbreviations, and region of all 50 US states and territories |
 
-##Code
+## Code
 ```r
 #How many breweries are present in each state?
 as.data.frame(table(Breweries$State))
